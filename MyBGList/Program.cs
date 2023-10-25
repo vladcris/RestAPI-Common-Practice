@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.EntityFrameworkCore;
 using MyBGList.Models;
+using MyBGList.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(opt => {
+    opt.ParameterFilter<SortColumnFilter>();
+    opt.ParameterFilter<SortOrderFilter>();
+});
 
 builder.Services.AddDbContext<ApplicationDbContext>(opt => {
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));

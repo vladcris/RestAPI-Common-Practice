@@ -17,31 +17,26 @@ public class BoardGamesController : ControllerBase
         this.appContext = appContext;
     }
     [HttpGet]
-    public async Task<RestDTO<BoardGame[]>> Get(int pageIndex = 0, 
-        int pageSize = 10, 
-        string? sortColumn = "Name", 
-        string? sortOrder = "ASC", 
-        string? filterQuery = null) {
-
+    public async Task<RestDTO<BoardGame[]>> Get([FromQuery] RequestDTO<BoardGameDTO> input) {
         var boardGames = appContext.BoardGames.AsQueryable();
-        if (!string.IsNullOrEmpty(filterQuery)) {
-            boardGames = boardGames.Where(bg => bg.Name.Contains(filterQuery));
+        if (!string.IsNullOrEmpty(input.FilterQuery)) {
+            boardGames = boardGames.Where(bg => bg.Name.Contains(input.FilterQuery));
         }
         var recordCount = await boardGames.CountAsync();
 
         boardGames = appContext.BoardGames
-            .OrderBy($"{sortColumn} {sortOrder}")
-            .Skip(pageIndex * pageSize)
-            .Take(pageSize);
+            .OrderBy($"{input.SortColumn} {input.SortOrder}")
+            .Skip(input.PageIndex * input.PageSize)
+            .Take(input.PageSize);
 
         return new RestDTO<BoardGame[]> {
             Data = await boardGames.ToArrayAsync(),
-            PageIndex = pageIndex,
-            PageSize = pageSize,
+            PageIndex = input.PageIndex,
+            PageSize = input.PageSize,
             RecordCount = recordCount,
             Links = new List<LinkDTO> {
                 new LinkDTO(
-                    Url.Action(null, "BoardGames", new {pageIndex, pageSize}, Request.Scheme)!,
+                    Url.Action(null, "BoardGames", new {input.PageIndex, input.PageSize}, Request.Scheme)!,
                     "self",
                     "GET")
             }
@@ -51,14 +46,14 @@ public class BoardGamesController : ControllerBase
 
     [HttpPost(Name = "UpdateBoardGame")]
     [ResponseCache(NoStore = true)]
-    public async Task<RestDTO<BoardGame?>> Post([FromBody] BoardGameDTO model) {
-        var boardGame = await appContext.BoardGames.FindAsync(model.Id);
+    public async Task<RestDTO<BoardGame?>> Post([FromBody] BoardGameDTO input) {
+        var boardGame = await appContext.BoardGames.FindAsync(input.Id);
         if (boardGame != null) {
-            if (!string.IsNullOrEmpty(model.Name)) {
-                boardGame.Name = model.Name;
+            if (!string.IsNullOrEmpty(input.Name)) {
+                boardGame.Name = input.Name;
             }
-            if (model.Year.HasValue && model.Year > 0) {
-                boardGame.Year = model.Year.Value;
+            if (input.Year.HasValue && input.Year > 0) {
+                boardGame.Year = input.Year.Value;
             }
             boardGame.LastModifiedDate = DateTime.Now;
 
@@ -71,7 +66,7 @@ public class BoardGamesController : ControllerBase
             Data = boardGame,
             Links = new List<LinkDTO> {
                 new LinkDTO(
-                    Url.Action(null, "BoardGames", model, Request.Scheme)!,
+                    Url.Action(null, "BoardGames", input, Request.Scheme)!,
                     "self",
                     "POST")
             }
