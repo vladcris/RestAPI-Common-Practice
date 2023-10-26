@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyBGList.Models;
 using MyBGList.Swagger;
@@ -6,7 +7,12 @@ using MyBGList.Swagger;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers(opt => {
+    opt.ModelBindingMessageProvider.SetValueIsInvalidAccessor((value) => $"The value '{value}' is invalid.");
+    opt.ModelBindingMessageProvider.SetValueMustBeANumberAccessor((value) => $"The field '{value}' must be a number.");
+    opt.ModelBindingMessageProvider.SetAttemptedValueIsInvalidAccessor((value, field) => $"The value '{value}' is not valid for {field}.");
+    opt.ModelBindingMessageProvider.SetMissingKeyOrValueAccessor(() => "A value is required.");
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(opt => {
@@ -31,6 +37,10 @@ builder.Services.AddCors(opt => {
         policy.AllowAnyMethod();
     });
 });
+
+builder.Services.Configure<ApiBehaviorOptions>(opt => {
+    opt.SuppressModelStateInvalidFilter = true;
+}); 
 
 var app = builder.Build();
 

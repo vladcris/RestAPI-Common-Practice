@@ -20,6 +20,14 @@ public class DomainsController : ControllerBase
 
     [HttpGet(Name = "GetDomains")]
     public async Task<RestDTO<Domain[]>> Get([FromQuery] RequestDTO<DomainDTO> input) {
+        if(!ModelState.IsValid) {
+            var details = new ValidationProblemDetails(ModelState);
+            details.Extensions["traceId"] = System.Diagnostics.Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+            if(ModelState.Keys.Any(k => k == "PageSize")) {
+
+            }
+        }
+
         var domains = dbContext.Domains.AsQueryable();
         if (!string.IsNullOrEmpty(input.FilterQuery)) {
             domains = domains.Where(bg => bg.Name.Contains(input.FilterQuery));
