@@ -1,6 +1,7 @@
 MyBGList/bin
 MyBGList/obj
 MyBGList/.vs
-bin
-obj
-.vs
+/bin
+/obj
+/.vs
+appsettings.json
