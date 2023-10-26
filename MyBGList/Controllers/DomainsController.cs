@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyBGList.Attributes;
 using MyBGList.DTO;
 using MyBGList.Models;
 using System;
 using System.Linq.Dynamic.Core;
+using System.Net;
 
 namespace MyBGList.Controllers;
 [Route("[controller]")]
@@ -19,12 +21,23 @@ public class DomainsController : ControllerBase
 
 
     [HttpGet(Name = "GetDomains")]
-    public async Task<RestDTO<Domain[]>> Get([FromQuery] RequestDTO<DomainDTO> input) {
+    [ResponseCache(Location = ResponseCacheLocation.Any, Duration = 60)]
+    [ManualValidationFilter]
+    public async Task<ActionResult<RestDTO<Domain[]?>>> Get([FromQuery] RequestDTO<DomainDTO> input) {
         if(!ModelState.IsValid) {
             var details = new ValidationProblemDetails(ModelState);
             details.Extensions["traceId"] = System.Diagnostics.Activity.Current?.Id ?? HttpContext.TraceIdentifier;
             if(ModelState.Keys.Any(k => k == "PageSize")) {
 
+                details.Type = "https://tools.ietf.org/html/rfc7231#section-6.6.2";
+                details.Status = StatusCodes.Status501NotImplemented;
+                return new ObjectResult(details) {
+                    StatusCode = StatusCodes.Status501NotImplemented
+                };
+            }else {
+                details.Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1";
+                details.Status = StatusCodes.Status400BadRequest;
+                return new BadRequestObjectResult(details);
             }
         }
 
