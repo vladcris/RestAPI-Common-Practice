@@ -28,7 +28,7 @@ jobs:
       run: ls
     
     - name: Change directory
-      run: cd MyBGList/MyBGList
+      run: cd MyBGList
       
     - name: List files in directory
       run: ls
