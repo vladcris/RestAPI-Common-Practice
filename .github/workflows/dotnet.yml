@@ -26,6 +26,12 @@ jobs:
       
     - name: List files in directory
       run: ls
+    
+    - name: Change directory
+      run: cd MyBGList
+      
+    - name: List files in directory
+      run: ls
       
     - name: Restore dependencies
       run: dotnet restore
