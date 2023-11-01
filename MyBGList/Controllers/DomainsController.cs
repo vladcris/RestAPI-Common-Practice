@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyBGList.Attributes;
+using MyBGList.Constants;
 using MyBGList.DTO;
 using MyBGList.Models;
 using System;
@@ -13,10 +14,12 @@ namespace MyBGList.Controllers;
 public class DomainsController : ControllerBase
 {
     private readonly ApplicationDbContext dbContext;
+    private readonly ILogger<DomainsController> _logger;
 
-    public DomainsController(ApplicationDbContext dbContext)
+    public DomainsController(ApplicationDbContext dbContext, ILogger<DomainsController> logger)
     {
         this.dbContext = dbContext;
+        _logger = logger;
     }
 
 
@@ -24,6 +27,8 @@ public class DomainsController : ControllerBase
     [ResponseCache(Location = ResponseCacheLocation.Any, Duration = 60)]
     [ManualValidationFilter]
     public async Task<ActionResult<RestDTO<Domain[]?>>> Get([FromQuery] RequestDTO<DomainDTO> input) {
+
+
         if(!ModelState.IsValid) {
             var details = new ValidationProblemDetails(ModelState);
             details.Extensions["traceId"] = System.Diagnostics.Activity.Current?.Id ?? HttpContext.TraceIdentifier;

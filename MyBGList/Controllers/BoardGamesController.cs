@@ -21,8 +21,9 @@ public class BoardGamesController : ControllerBase
     }
     [HttpGet]
     public async Task<RestDTO<BoardGame[]>> Get([FromQuery] RequestDTO<BoardGameDTO> input) {
-        logger.LogInformation(CustomLogEvents.BoardGamesController_Get, "Get BoardGames");
-        
+        logger.LogInformation(CustomLogEvents.BoardGamesController_Get, "Get method started at {StartTime:HH:mm}.", DateTime.Now);
+
+
         var boardGames = appContext.BoardGames.AsQueryable();
         if (!string.IsNullOrEmpty(input.FilterQuery)) {
             boardGames = boardGames.Where(bg => bg.Name.Contains(input.FilterQuery));
