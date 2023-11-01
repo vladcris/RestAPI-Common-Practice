@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyBGList.Constants;
 using MyBGList.DTO;
 using MyBGList.Models;
 using System.Linq.Dynamic.Core;
@@ -11,13 +12,17 @@ namespace MyBGList.Controllers;
 public class BoardGamesController : ControllerBase
 {
     private readonly ApplicationDbContext appContext;
+    private readonly ILogger<BoardGamesController> logger;
 
-    public BoardGamesController(ApplicationDbContext appContext)
+    public BoardGamesController(ApplicationDbContext appContext, ILogger<BoardGamesController> logger)
     {
         this.appContext = appContext;
+        this.logger = logger;
     }
     [HttpGet]
     public async Task<RestDTO<BoardGame[]>> Get([FromQuery] RequestDTO<BoardGameDTO> input) {
+        logger.LogInformation(CustomLogEvents.BoardGamesController_Get, "Get BoardGames");
+        
         var boardGames = appContext.BoardGames.AsQueryable();
         if (!string.IsNullOrEmpty(input.FilterQuery)) {
             boardGames = boardGames.Where(bg => bg.Name.Contains(input.FilterQuery));

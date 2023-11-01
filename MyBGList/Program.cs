@@ -2,11 +2,15 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyBGList.Constants;
 using MyBGList.Models;
 using MyBGList.Swagger;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSimpleConsole().AddDebug();
 
 // Add services to the container.
 builder.Services.AddControllers(opt => {
@@ -59,6 +63,9 @@ else {
     app.UseExceptionHandler(error => {
         error.Run(async context => {
             var exceptionHandler = context.Features.Get<IExceptionHandlerFeature>();
+            app.Logger.LogError(CustomLogEvents.Error_Get, exceptionHandler?.Error, 
+                "An undandled error occured: Message : {error}", exceptionHandler!.Error.Message);
+
             var details = new ProblemDetails();
             details.Detail = exceptionHandler?.Error.Message;
             details.Extensions["traceId"] = System.Diagnostics.Activity.Current?.Id ?? context.TraceIdentifier;
