@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using MyBGList.DTO;
+using MyBGList.Extensions;
 using MyBGList.Models;
 using System.Linq.Dynamic.Core;
+using System.Text.Json;
 
 namespace MyBGList.Controllers;
 [Route("[controller]")]
@@ -10,9 +13,11 @@ namespace MyBGList.Controllers;
 public class MechanicsController : ControllerBase
 {
     private readonly ApplicationDbContext dbContext;
+    private readonly IDistributedCache _distributedCache;
 
-    public MechanicsController(ApplicationDbContext dbContext) {
+    public MechanicsController(ApplicationDbContext dbContext, IDistributedCache distributedCache) {
         this.dbContext = dbContext;
+        _distributedCache = distributedCache;
     }
 
 
@@ -24,10 +29,18 @@ public class MechanicsController : ControllerBase
         }
         var recordCount = await mechanics.CountAsync();
 
-        mechanics = dbContext.Mechanics
-            .OrderBy($"{input.SortColumn} {input.SortOrder}")
-            .Skip(input.PageIndex * input.PageSize)
-            .Take(input.PageSize);
+        Mechanic[]? result = null;
+        var cacheKey = $"{input.GetType()}-{JsonSerializer.Serialize(input)}";
+        if(_distributedCache.TryGetValue(cacheKey, out result) == false) {
+            mechanics = dbContext.Mechanics
+                .OrderBy($"{input.SortColumn} {input.SortOrder}")
+                .Skip(input.PageIndex * input.PageSize)
+                .Take(input.PageSize);
+
+            result = await mechanics.ToArrayAsync();
+
+            _distributedCache.Set(cacheKey, result, new TimeSpan(0, 0, 30));
+        }
 
         return new RestDTO<Mechanic[]> {
             Data = await mechanics.ToArrayAsync(),
