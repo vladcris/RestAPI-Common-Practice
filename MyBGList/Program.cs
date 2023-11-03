@@ -117,7 +117,14 @@ app.UseCors();
 app.UseAuthorization();
 
 app.MapGet("/error/test", () => { throw new Exception("Exception triggered!"); });
+app.MapGet("/", () => "Hello World!");
 
 app.MapControllers();
 
 app.Run();
+
+
+namespace MyBGList
+{
+    public partial class Program { }
+}
