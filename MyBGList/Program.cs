@@ -7,8 +7,8 @@ using MyBGList.Swagger;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
 using System.Data;
+using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Threading;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +53,27 @@ builder.Services.AddControllers(opt => {
     opt.ModelBindingMessageProvider.SetValueMustBeANumberAccessor((value) => $"The field '{value}' must be a number.");
     opt.ModelBindingMessageProvider.SetAttemptedValueIsInvalidAccessor((value, field) => $"The value '{value}' is not valid for {field}.");
     opt.ModelBindingMessageProvider.SetMissingKeyOrValueAccessor(() => "A value is required.");
+
+    opt.CacheProfiles.Add("NoCache", new CacheProfile { NoStore = true });
+    opt.CacheProfiles.Add("Any-60", new CacheProfile { Location = ResponseCacheLocation.Any, Duration = 60 });
+});
+
+builder.Services.AddResponseCaching(opt => {
+    opt.MaximumBodySize = 64 * 1024 * 1024;
+    opt.SizeLimit = 100 * 1024 * 1024;
+});
+
+builder.Services.AddMemoryCache(opt => {
+
+});
+//builder.Services.AddDistributedSqlServerCache(opt => {
+//    opt.ConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");  
+//    opt.SchemaName = "dbo";
+//    opt.TableName = "AppCache";
+//});
+
+builder.Services.AddStackExchangeRedisCache(opt => {
+    opt.Configuration = builder.Configuration["Redis:ConnectionString"];
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -113,8 +134,18 @@ else {
 
 app.UseHttpsRedirection();
 app.UseCors();
+app.UseResponseCaching();
 
 app.UseAuthorization();
+
+app.Use((context, next) => {
+    context.Response.GetTypedHeaders().CacheControl = 
+        new Microsoft.Net.Http.Headers.CacheControlHeaderValue {
+            NoStore = true,
+            NoCache = true
+        };
+    return next();
+});
 
 app.MapGet("/error/test", () => { throw new Exception("Exception triggered!"); });
 app.MapGet("/", () => "Hello World!");
