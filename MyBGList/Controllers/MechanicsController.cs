@@ -22,38 +22,48 @@ public class MechanicsController : ControllerBase
 
 
     [HttpGet(Name = "GetMechanics")]
-    public async Task<RestDTO<Mechanic[]>> Get([FromQuery] RequestDTO<MechanicDTO> input) {
-        var mechanics = dbContext.Mechanics.AsQueryable();
-        if (!string.IsNullOrEmpty(input.FilterQuery)) {
-            mechanics = mechanics.Where(bg => bg.Name.Contains(input.FilterQuery));
-        }
-        var recordCount = await mechanics.CountAsync();
+    public async Task<ActionResult<RestDTO<Mechanic[]>>> Get([FromQuery] RequestDTO<MechanicDTO> input) {
+        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.CancelAfter(3000);
+        var token = cancellationTokenSource.Token;
+        //if query take longer than 1 second, cancel it
+        // delay make sure it always take longer than 2 seconds
+        var delayTask = Task.Delay(2000, token);
 
-        Mechanic[]? result = null;
-        var cacheKey = $"{input.GetType()}-{JsonSerializer.Serialize(input)}";
-        if(_distributedCache.TryGetValue(cacheKey, out result) == false) {
-            mechanics = dbContext.Mechanics
-                .OrderBy($"{input.SortColumn} {input.SortOrder}")
-                .Skip(input.PageIndex * input.PageSize)
-                .Take(input.PageSize);
+        while (true) {
+            var mechanics = dbContext.Mechanics.AsQueryable();
+            if (!string.IsNullOrEmpty(input.FilterQuery)) {
+                mechanics = mechanics.Where(bg => bg.Name.Contains(input.FilterQuery));
+            }
+            var recordCount = await mechanics.CountAsync(token);
 
-            result = await mechanics.ToArrayAsync();
+            Mechanic[]? result = null;
+            var cacheKey = $"{input.GetType()}-{JsonSerializer.Serialize(input)}";
+            if (_distributedCache.TryGetValue(cacheKey, out result) == false) {
+                mechanics = dbContext.Mechanics
+                    .OrderBy($"{input.SortColumn} {input.SortOrder}")
+                    .Skip(input.PageIndex * input.PageSize)
+                    .Take(input.PageSize);
+                result = await mechanics.ToArrayAsync(token);
 
-            _distributedCache.Set(cacheKey, result, new TimeSpan(0, 0, 30));
-        }
+                _distributedCache.Set(cacheKey, result, new TimeSpan(0, 0, 30));
+            }
 
-        return new RestDTO<Mechanic[]> {
-            Data = await mechanics.ToArrayAsync(),
-            PageIndex = input.PageIndex,
-            PageSize = input.PageSize,
-            RecordCount = recordCount,
-            Links = new List<LinkDTO> {
+            await delayTask;
+
+            return new RestDTO<Mechanic[]> {
+                Data = result!,
+                PageIndex = input.PageIndex,
+                PageSize = input.PageSize,
+                RecordCount = recordCount,
+                Links = new List<LinkDTO> {
                 new LinkDTO(
                     Url.Action(null, "Mechanics", new {input.PageIndex, input.PageSize}, Request.Scheme)!,
                     "self",
                     "GET")
             }
-        };
+            };
+        }
     }
 
     [HttpPost(Name = "UpdateMechanics")]

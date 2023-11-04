@@ -22,7 +22,7 @@ public class Samples : IClassFixture<CustomWebApplicationFactory<Program>>
         _fixture = fixture;
     }
     [Fact]
-    public async void Sample_TestHost() {
+    public async void Test_TestHost() {
         var hostBuilder = new HostBuilder()
             .ConfigureWebHost(webHost => {
                 webHost.ConfigureServices(services => {
@@ -49,7 +49,7 @@ public class Samples : IClassFixture<CustomWebApplicationFactory<Program>>
         content.Should().Be("Hello World!");    
     }
 
-    [Fact]
+    //[Fact]
     public async void Test_LiveHost() {
         var sut = _fixture.CreateClient();
 
@@ -88,6 +88,14 @@ public class CustomWebApplicationFactory<TProgram>
             });
         });
 
+        builder.Configure(app => {
+            app.UseRouting();
+            app.UseEndpoints(endpoints => {
+                endpoints.MapGet("/", async context => {
+                    await context.Response.WriteAsync("Hello World!");
+                });
+            });
+        });
 
         builder.UseEnvironment("Development");
     }

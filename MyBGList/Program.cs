@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyBGList.Abstractions;
 using MyBGList.Constants;
 using MyBGList.Models;
+using MyBGList.Services;
 using MyBGList.Swagger;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
@@ -100,6 +102,10 @@ builder.Services.AddCors(opt => {
     });
 });
 
+builder.Services.AddHttpClient<IXkcdService, XkcdService>(opt => {
+    opt.BaseAddress = new Uri("https://xkcd.com/");
+});
+
 //builder.Services.Configure<ApiBehaviorOptions>(opt => {
 //    opt.SuppressModelStateInvalidFilter = true;
 //}); 
@@ -148,7 +154,7 @@ app.Use((context, next) => {
 });
 
 app.MapGet("/error/test", () => { throw new Exception("Exception triggered!"); });
-app.MapGet("/", () => "Hello World!");
+//app.MapGet("/", () => "Hello World!");
 
 app.MapControllers();
 
