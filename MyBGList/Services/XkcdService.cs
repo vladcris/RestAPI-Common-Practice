@@ -1,7 +1,6 @@
 ﻿using MyBGList.Abstractions;
 using MyBGList.Models.Xkcd;
 using RestSharp;
-using System.Threading.Tasks;
 
 namespace MyBGList.Services;
 
@@ -26,8 +25,6 @@ public class XkcdService : IXkcdService
             tasks.Add(GetPostAsync(id));
         }
 
-        tasks.Add(GetPostAsync(1000000));
-
         var task = await Task.WhenAll(tasks);
 
         return task;    
@@ -39,8 +36,6 @@ public class XkcdService : IXkcdService
         foreach (var id in ids) {
             tasks.Add(GetPostAsync(id));
         }
-
-        tasks.Add(GetPostAsync(1000000));
 
         while (tasks.Any() && count-- > 0) {
             var executedTask = await Task.WhenAny(tasks);

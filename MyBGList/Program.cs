@@ -1,15 +1,20 @@
+using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MyBGList.Abstractions;
 using MyBGList.Constants;
 using MyBGList.Models;
 using MyBGList.Services;
 using MyBGList.Swagger;
+using MyBGList.Validators;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
 using System.Data;
-using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -78,6 +83,8 @@ builder.Services.AddStackExchangeRedisCache(opt => {
     opt.Configuration = builder.Configuration["Redis:ConnectionString"];
 });
 
+builder.Services.AddScoped<IValidator<RegisterDTO>, RegisterInputValidator>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(opt => {
     opt.ParameterFilter<SortColumnFilter>();
@@ -87,6 +94,32 @@ builder.Services.AddSwaggerGen(opt => {
 builder.Services.AddDbContext<ApplicationDbContext>(opt => {
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+builder.Services.AddAuthentication(opt => {
+    opt.DefaultAuthenticateScheme =
+    opt.DefaultChallengeScheme =
+    opt.DefaultScheme =
+    opt.DefaultSignInScheme =
+    opt.DefaultForbidScheme =
+    opt.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
+
+}).AddJwtBearer(opt => {
+    opt.TokenValidationParameters = new TokenValidationParameters {
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+    };
+});
+builder.Services.AddAuthorization();
+
+builder.Services.AddIdentity<ApiUser, IdentityRole>(opt => {
+    opt.Password.RequiredLength = 8;
+}).AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddCors(opt => {
     opt.AddDefaultPolicy(policy => {
@@ -142,6 +175,7 @@ app.UseHttpsRedirection();
 app.UseCors();
 app.UseResponseCaching();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.Use((context, next) => {
