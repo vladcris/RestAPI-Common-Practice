@@ -1,11 +1,12 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.IdentityModel.Tokens;
 using MyBGList.Models;
-using System.Linq;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace MyBGList.Controllers;
 [Route("account")]
@@ -59,8 +60,37 @@ public class AccountController : ControllerBase
 
     [HttpPost("login")]
     [ResponseCache(CacheProfileName = "NoCache")]
-    public async Task<ActionResult> Login() {
-        throw new NotImplementedException();
+    public async Task<ActionResult> Login([FromBody] LoginDTO input) {
+        var issuer = _configuration.GetSection("Jwt:Issuer").Value;
+        var audience = _configuration.GetSection("Jwt:Audience").Value;
+        var key = _configuration.GetSection("Jwt:Key").Value;
+
+        var user = await _userManager.FindByNameAsync(input.UserName!);
+        if(user == null) {
+            return StatusCode(401, "Invalid credentials");
+        }
+
+        var login = await _signInManager.PasswordSignInAsync(user: user,
+            password: input.Password!,
+            isPersistent: false,
+            lockoutOnFailure: false);
+
+        if(!login.Succeeded) {
+            return StatusCode(401, "Invalid credentials");
+        }
+
+        var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.UserName!) };
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key!));
+        var signInCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+        JwtSecurityToken jwt = new JwtSecurityToken(issuer: issuer,
+                                                    audience: audience,
+                                                    claims: claims,
+                                                    expires: DateTime.Now.AddMinutes(30),
+                                                    signingCredentials: signInCredentials);
+
+        var token = new JwtSecurityTokenHandler().WriteToken(jwt);
+
+        return Ok(new { Access_Token = token });
     }
 
 

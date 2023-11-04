@@ -95,13 +95,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt => {
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+builder.Services.AddAuthorization(opt => {
+
+});
 builder.Services.AddAuthentication(opt => {
     opt.DefaultAuthenticateScheme =
-    opt.DefaultChallengeScheme =
-    opt.DefaultScheme =
-    opt.DefaultSignInScheme =
-    opt.DefaultForbidScheme =
-    opt.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
+    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
 }).AddJwtBearer(opt => {
     opt.TokenValidationParameters = new TokenValidationParameters {
@@ -115,11 +114,11 @@ builder.Services.AddAuthentication(opt => {
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
 });
-builder.Services.AddAuthorization();
 
 builder.Services.AddIdentity<ApiUser, IdentityRole>(opt => {
     opt.Password.RequiredLength = 8;
-}).AddEntityFrameworkStores<ApplicationDbContext>();
+}).AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
 
 builder.Services.AddCors(opt => {
     opt.AddDefaultPolicy(policy => {
@@ -172,11 +171,12 @@ else {
 }
 
 app.UseHttpsRedirection();
-app.UseCors();
-app.UseResponseCaching();
+//app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseResponseCaching();
 
 app.Use((context, next) => {
     context.Response.GetTypedHeaders().CacheControl = 

@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyBGList.Attributes;
-using MyBGList.Constants;
 using MyBGList.DTO;
 using MyBGList.Models;
-using System;
 using System.Linq.Dynamic.Core;
-using System.Net;
 
 namespace MyBGList.Controllers;
+
+[Authorize]
 [Route("[controller]")]
 [ApiController]
 public class DomainsController : ControllerBase
@@ -22,7 +22,7 @@ public class DomainsController : ControllerBase
         _logger = logger;
     }
 
-
+    [Authorize]
     [HttpGet(Name = "GetDomains")]
     [ResponseCache(CacheProfileName = "Any-60")]
     [ManualValidationFilter]

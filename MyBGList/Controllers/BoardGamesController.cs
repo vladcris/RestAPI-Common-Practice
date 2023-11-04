@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using MyBGList.Constants;
@@ -9,6 +10,7 @@ using System.Text.Json;
 
 namespace MyBGList.Controllers;
 
+[Authorize]
 [Route("[controller]")]
 [ApiController]
 public class BoardGamesController : ControllerBase
