@@ -2,13 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyBGList.Attributes;
+using MyBGList.Constants;
 using MyBGList.DTO;
 using MyBGList.Models;
 using System.Linq.Dynamic.Core;
 
 namespace MyBGList.Controllers;
 
-[Authorize]
 [Route("[controller]")]
 [ApiController]
 public class DomainsController : ControllerBase
@@ -22,7 +22,7 @@ public class DomainsController : ControllerBase
         _logger = logger;
     }
 
-    [Authorize]
+    [Authorize(Policy = "MinAge18")]
     [HttpGet(Name = "GetDomains")]
     [ResponseCache(CacheProfileName = "Any-60")]
     [ManualValidationFilter]
@@ -71,6 +71,8 @@ public class DomainsController : ControllerBase
         };
     }
 
+
+    [Authorize(Roles = RoleNames.Moderator)]
     [HttpPost(Name = "UpdateDomains")]
     [ResponseCache(NoStore = true)]
     public async Task<RestDTO<Domain?>> Post([FromBody] DomainDTO model) {
@@ -98,6 +100,7 @@ public class DomainsController : ControllerBase
         };
     }
 
+    [Authorize(Roles = RoleNames.Administrator)]
     [HttpDelete("{id}", Name = "DeleteDomain")]
     public async Task<RestDTO<Domain?>> Delete(int id) {
         var domain = await dbContext.Domains.Where(bg => bg.Id == id).FirstOrDefaultAsync();

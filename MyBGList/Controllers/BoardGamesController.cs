@@ -10,7 +10,6 @@ using System.Text.Json;
 
 namespace MyBGList.Controllers;
 
-[Authorize]
 [Route("[controller]")]
 [ApiController]
 public class BoardGamesController : ControllerBase
@@ -24,6 +23,8 @@ public class BoardGamesController : ControllerBase
         this.logger = logger;
         _memoryCache = memoryCache;
     }
+
+    
     [HttpGet]
     [ResponseCache(NoStore = true)]
     public async Task<RestDTO<BoardGame[]>> Get([FromQuery] RequestDTO<BoardGameDTO> input) {
@@ -63,7 +64,7 @@ public class BoardGamesController : ControllerBase
         };
     }
 
-
+    [Authorize(Roles = RoleNames.Moderator)]
     [HttpPost(Name = "UpdateBoardGame")]
     [ResponseCache(NoStore = true)]
     public async Task<RestDTO<BoardGame?>> Post([FromBody] BoardGameDTO input) {
@@ -93,6 +94,7 @@ public class BoardGamesController : ControllerBase
         };
     }
 
+    [Authorize(Roles = RoleNames.Administrator)]
     [HttpDelete("{id}", Name = "DeleteBoardGame")]
     public async Task<RestDTO<BoardGame?>> Delete(int id) {
         var boardGame = await appContext.BoardGames.Where(bg => bg.Id == id).FirstOrDefaultAsync();
@@ -113,7 +115,7 @@ public class BoardGamesController : ControllerBase
         };
     }
 
-
+    [Authorize]
     [HttpGet("all")]
     public async Task<BoardGame[]> GetAll() {
         return await appContext.BoardGames.ToArrayAsync();

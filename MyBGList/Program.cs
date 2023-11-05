@@ -1,19 +1,26 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using MyBGList.Abstractions;
 using MyBGList.Constants;
 using MyBGList.Models;
+using MyBGList.Policies;
+using MyBGList.Policies.Handlers;
 using MyBGList.Services;
 using MyBGList.Swagger;
 using MyBGList.Validators;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
+using System;
 using System.Data;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 
@@ -89,21 +96,78 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(opt => {
     opt.ParameterFilter<SortColumnFilter>();
     opt.ParameterFilter<SortOrderFilter>();
+
+    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
+        In = ParameterLocation.Header,
+        Description = "Please enter token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+
+    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme {
+                Reference = new OpenApiReference {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+        }, Array.Empty<string>() }
+    });
 });
 
 builder.Services.AddDbContext<ApplicationDbContext>(opt => {
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+builder.Services.AddIdentity<ApiUser, IdentityRole>(opt => {
+    opt.Password.RequiredLength = 8;
+}).AddEntityFrameworkStores<ApplicationDbContext>();
 
+
+builder.Services.AddSingleton<IAuthorizationHandler, MinimumAgeHandler>();
 builder.Services.AddAuthorization(opt => {
+    opt.AddPolicy("WithDateOfBirth", policy => {
+        policy.RequireClaim("DateOfBirth")
+            .RequireClaim(ClaimTypes.Role, "Administrator");
+    });
 
+    opt.AddPolicy("MinAge18", policy => {
+        policy.RequireAssertion(context => {
+            var dateOfBirth = context.User.FindFirstValue("DateOfBirth");
+            if (dateOfBirth == null) {
+                return false;
+            }
+
+            if(DateTime.TryParse(dateOfBirth, out var date)) {
+                var timeSpan = DateTime.Now - date;
+                DateTime zeroTime = new DateTime(1, 1, 1);
+                int age = (zeroTime + timeSpan).Year - 1;
+
+                if(age >= 18) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        opt.AddPolicy("min-age", policy => {
+            policy.Requirements.Add(new MinimumAgeRequirement(18));
+        });
+    });
 });
-builder.Services.AddAuthentication(opt => {
-    opt.DefaultAuthenticateScheme =
-    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-}).AddJwtBearer(opt => {
-    opt.TokenValidationParameters = new TokenValidationParameters {
+builder.Services.AddAuthentication(options => {
+    options.DefaultAuthenticateScheme =
+    options.DefaultChallengeScheme =
+    options.DefaultForbidScheme =
+    options.DefaultScheme =
+    options.DefaultSignInScheme =
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    var schems = options.Schemes;
+}).AddJwtBearer(options => { 
+    options.TokenValidationParameters = new TokenValidationParameters {
         ValidateIssuer = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
 
@@ -113,12 +177,9 @@ builder.Services.AddAuthentication(opt => {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
+
 });
 
-builder.Services.AddIdentity<ApiUser, IdentityRole>(opt => {
-    opt.Password.RequiredLength = 8;
-}).AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
 
 builder.Services.AddCors(opt => {
     opt.AddDefaultPolicy(policy => {
@@ -171,21 +232,24 @@ else {
 }
 
 app.UseHttpsRedirection();
-//app.UseCors();
+app.UseCors();
+
+app.UseRouting();
+
+//app.UseResponseCaching();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseResponseCaching();
 
-app.Use((context, next) => {
-    context.Response.GetTypedHeaders().CacheControl = 
-        new Microsoft.Net.Http.Headers.CacheControlHeaderValue {
-            NoStore = true,
-            NoCache = true
-        };
-    return next();
-});
+//app.Use((context, next) => {
+//    context.Response.GetTypedHeaders().CacheControl = 
+//        new Microsoft.Net.Http.Headers.CacheControlHeaderValue {
+//            NoStore = true,
+//            NoCache = true
+//        };
+//    return next();
+//});
 
 app.MapGet("/error/test", () => { throw new Exception("Exception triggered!"); });
 //app.MapGet("/", () => "Hello World!");
@@ -195,7 +259,7 @@ app.MapControllers();
 app.Run();
 
 
-namespace MyBGList
-{
-    public partial class Program { }
-}
+//namespace MyBGList
+//{
+//    public partial class Program { }
+//}

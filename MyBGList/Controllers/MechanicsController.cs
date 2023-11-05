@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using MyBGList.Constants;
 using MyBGList.DTO;
 using MyBGList.Extensions;
 using MyBGList.Models;
@@ -66,6 +68,8 @@ public class MechanicsController : ControllerBase
         }
     }
 
+
+    [Authorize(Roles = RoleNames.Moderator)]
     [HttpPost(Name = "UpdateMechanics")]
     [ResponseCache(NoStore = true)]
     public async Task<RestDTO<Mechanic?>> Post([FromBody] MechanicDTO model) {
@@ -93,6 +97,8 @@ public class MechanicsController : ControllerBase
         };
     }
 
+
+    [Authorize(Roles = RoleNames.Administrator)]
     [HttpDelete("{id}", Name = "DeleteMechanic")]
     public async Task<RestDTO<Mechanic?>> Delete(int id) {
         var mechanic = await dbContext.Mechanics.Where(bg => bg.Id == id).FirstOrDefaultAsync();

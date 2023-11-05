@@ -75,11 +75,20 @@ public class AccountController : ControllerBase
             isPersistent: false,
             lockoutOnFailure: false);
 
-        if(!login.Succeeded) {
+
+        //var login = await _userManager.CheckPasswordAsync(user, input.Password!);
+
+        if (!login.Succeeded) {
             return StatusCode(401, "Invalid credentials");
         }
 
+        var roles = await _userManager.GetRolesAsync(user: user);
+        var existingClaims = await _userManager.GetClaimsAsync(user: user); 
+
         var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.UserName!) };
+        claims.AddRange(roles.Select(x => new Claim(ClaimTypes.Role, x)));
+        claims.AddRange(existingClaims);
+
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key!));
         var signInCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
         JwtSecurityToken jwt = new JwtSecurityToken(issuer: issuer,
