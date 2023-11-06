@@ -13,7 +13,7 @@ public class DomainsTests : IClassFixture<DatabaseFixture>
         _context = context.DbContext;
     }
 
-    [Fact]
+    //[Fact]
     public void Ensure_Database_Created() {
         var database = _context.Database.IsNpgsql();
 

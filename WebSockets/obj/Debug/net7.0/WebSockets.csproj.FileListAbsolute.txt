@@ -1,0 +1,14 @@
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\bin\Debug\net7.0\WebSockets.exe
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\bin\Debug\net7.0\WebSockets.deps.json
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\bin\Debug\net7.0\WebSockets.runtimeconfig.json
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\bin\Debug\net7.0\WebSockets.dll
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\bin\Debug\net7.0\WebSockets.pdb
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\obj\Debug\net7.0\WebSockets.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\obj\Debug\net7.0\WebSockets.AssemblyInfoInputs.cache
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\obj\Debug\net7.0\WebSockets.AssemblyInfo.cs
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\obj\Debug\net7.0\WebSockets.csproj.CoreCompileInputs.cache
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\obj\Debug\net7.0\WebSockets.dll
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\obj\Debug\net7.0\refint\WebSockets.dll
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\obj\Debug\net7.0\WebSockets.pdb
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\obj\Debug\net7.0\WebSockets.genruntimeconfig.cache
+C:\Users\const\source\repos\building-web-apis-with-aspnet-core\WebSockets\obj\Debug\net7.0\ref\WebSockets.dll

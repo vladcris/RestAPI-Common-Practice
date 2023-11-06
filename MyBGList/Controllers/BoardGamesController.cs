@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using MyBGList.Constants;
 using MyBGList.DTO;
+using MyBGList.Mediator.Queries;
 using MyBGList.Models;
 using System.Linq.Dynamic.Core;
 using System.Text.Json;
@@ -17,13 +19,24 @@ public class BoardGamesController : ControllerBase
     private readonly ApplicationDbContext appContext;
     private readonly ILogger<BoardGamesController> logger;
     private readonly IMemoryCache _memoryCache;
+    private readonly IMediator _mediator;
 
-    public BoardGamesController(ApplicationDbContext appContext, ILogger<BoardGamesController> logger, IMemoryCache memoryCache) {
+    public BoardGamesController(ApplicationDbContext appContext, 
+            ILogger<BoardGamesController> logger, 
+            IMemoryCache memoryCache,
+            IMediator mediator) {
         this.appContext = appContext;
         this.logger = logger;
         _memoryCache = memoryCache;
+        _mediator = mediator;
     }
 
+    [HttpGet("{id:int}", Name = "GetBoardGame")]
+    public async Task<ActionResult<RestDTO<BoardGame>>> GetBoardGame(int id) {
+        var response = await _mediator.Send(new GetBoardGame(id));
+
+        return Ok(response);
+    }
     
     [HttpGet]
     [ResponseCache(NoStore = true)]
