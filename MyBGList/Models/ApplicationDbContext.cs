@@ -5,7 +5,9 @@ namespace MyBGList.Models;
 
 public class ApplicationDbContext : IdentityDbContext<ApiUser>
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> opt) : base(opt) {}
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> opt) : base(opt) {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);

@@ -73,7 +73,7 @@ public class SeedController : ControllerBase
     }
 
 
-    [Authorize(Roles = RoleNames.Administrator)]
+    //[Authorize(Roles = RoleNames.Administrator)]
     [HttpPut(Name = "Seed")]
     [ResponseCache(NoStore = true)]
     public async Task<IActionResult> BoardGameData() {
@@ -183,11 +183,11 @@ public class SeedController : ControllerBase
 
         using var transaction = await dbContext.Database.BeginTransactionAsync();
 
-        dbContext.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT BoardGames ON");
+        //dbContext.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT BoardGames ON");
 
         await dbContext.SaveChangesAsync();
 
-        dbContext.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT BoardGames OFF");
+        //dbContext.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT BoardGames OFF");
 
         transaction.Commit();
 

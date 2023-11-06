@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyBGList.Attributes;
 using MyBGList.Constants;
 using MyBGList.DTO;
+using MyBGList.Mediator.Queries;
 using MyBGList.Models;
 using System.Linq.Dynamic.Core;
 
@@ -15,14 +17,16 @@ public class DomainsController : ControllerBase
 {
     private readonly ApplicationDbContext dbContext;
     private readonly ILogger<DomainsController> _logger;
+    private readonly IMediator _mediator;
 
-    public DomainsController(ApplicationDbContext dbContext, ILogger<DomainsController> logger)
+    public DomainsController(ApplicationDbContext dbContext, ILogger<DomainsController> logger, IMediator mediator)
     {
         this.dbContext = dbContext;
         _logger = logger;
+        _mediator = mediator;
     }
 
-    [Authorize(Policy = "MinAge18")]
+    //[Authorize(Policy = "MinAge18")]
     [HttpGet(Name = "GetDomains")]
     [ResponseCache(CacheProfileName = "Any-60")]
     [ManualValidationFilter]
@@ -46,7 +50,7 @@ public class DomainsController : ControllerBase
             }
         }
 
-        var domains = dbContext.Domains.AsQueryable();
+        var domains = dbContext.Domains.AsQueryable().AsNoTracking();
         if (!string.IsNullOrEmpty(input.FilterQuery)) {
             domains = domains.Where(bg => bg.Name.Contains(input.FilterQuery));
         }
@@ -57,7 +61,7 @@ public class DomainsController : ControllerBase
             .Skip(input.PageIndex * input.PageSize)
             .Take(input.PageSize);
 
-        return new RestDTO<Domain[]> {
+        return new RestDTO<Domain[]?> {
             Data = await domains.ToArrayAsync(),
             PageIndex = input.PageIndex,
             PageSize = input.PageSize,
@@ -69,6 +73,34 @@ public class DomainsController : ControllerBase
                     "GET")
             }
         };
+    }
+
+    //[Authorize(Policy = "MinAge18")]
+    [HttpGet("get-mediator", Name = "GetMediator")]
+    [ResponseCache(CacheProfileName = "Any-60")]
+    [ManualValidationFilter]
+    public async Task<ActionResult<RestDTO<Domain[]?>>> GetMediator([FromQuery] RequestDTO<DomainDTO> input) {
+        if (!ModelState.IsValid) {
+            var details = new ValidationProblemDetails(ModelState);
+            details.Extensions["traceId"] = System.Diagnostics.Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+            if (ModelState.Keys.Any(k => k == "PageSize")) {
+
+                details.Type = "https://tools.ietf.org/html/rfc7231#section-6.6.2";
+                details.Status = StatusCodes.Status501NotImplemented;
+                return new ObjectResult(details) {
+                    StatusCode = StatusCodes.Status501NotImplemented
+                };
+            }
+            else {
+                details.Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1";
+                details.Status = StatusCodes.Status400BadRequest;
+                return new BadRequestObjectResult(details);
+            }
+        }
+
+        var response = await _mediator.Send(new GetDomains(input));
+
+        return Ok(response);
     }
 
 

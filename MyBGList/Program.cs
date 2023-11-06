@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MyBGList.Abstractions;
@@ -18,11 +17,11 @@ using MyBGList.Swagger;
 using MyBGList.Validators;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
-using System;
 using System.Data;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -118,9 +117,20 @@ builder.Services.AddSwaggerGen(opt => {
     });
 });
 
+var provider = builder.Configuration.GetValue("Provider", "Npgsql");
 builder.Services.AddDbContext<ApplicationDbContext>(opt => {
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    _ = provider switch {
+        "Npgsql" => opt.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
+
+        "SqlServer" => opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer")),
+
+        _ => throw new Exception($"Unsupported provider: {provider}")
+    };
 });
+
+
+
+
 builder.Services.AddIdentity<ApiUser, IdentityRole>(opt => {
     opt.Password.RequiredLength = 8;
 }).AddEntityFrameworkStores<ApplicationDbContext>();
@@ -203,6 +213,10 @@ builder.Services.AddHttpClient<IXkcdService, XkcdService>(opt => {
 //    opt.SuppressModelStateInvalidFilter = true;
 //}); 
 
+builder.Services.AddMediatR(cfg => {
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -259,7 +273,7 @@ app.MapControllers();
 app.Run();
 
 
-//namespace MyBGList
-//{
-//    public partial class Program { }
-//}
+namespace MyBGList
+{
+    public partial class Program { }
+}

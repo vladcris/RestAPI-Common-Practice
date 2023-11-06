@@ -28,12 +28,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MyBGGList.Test.Helpers\MyBGGList.Test.Helpers.csproj" />
     <ProjectReference Include="..\MyBGList\MyBGList.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="IntegrationTests\" />
-    <Folder Include="UnitTests\" />
   </ItemGroup>
 
 </Project>
