@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MyBGList.Abstractions;
 using MyBGList.Constants;
+using MyBGList.GraphQL;
 using MyBGList.Models;
 using MyBGList.Policies;
 using MyBGList.Policies.Handlers;
@@ -209,6 +210,12 @@ builder.Services.AddHttpClient<IXkcdService, XkcdService>(opt => {
     opt.BaseAddress = new Uri("https://xkcd.com/");
 });
 
+builder.Services.AddGraphQLServer()
+    .AddAuthorization()
+    .AddQueryType<Query>()
+    .AddMutationType<Mutation>()
+    .AddProjections().AddFiltering().AddSorting();
+
 //builder.Services.Configure<ApiBehaviorOptions>(opt => {
 //    opt.SuppressModelStateInvalidFilter = true;
 //}); 
@@ -255,6 +262,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGraphQL();
 
 //app.Use((context, next) => {
 //    context.Response.GetTypedHeaders().CacheControl = 

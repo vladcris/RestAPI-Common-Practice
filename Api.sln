@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyBGList.Tests", "MyBGList.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyBGGList.Test.Helpers", "MyBGGList.Test.Helpers\MyBGGList.Test.Helpers.csproj", "{F05EC7F5-FDC2-4525-9084-A7EF5DD1B3C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSockets", "WebSockets\WebSockets.csproj", "{29C64DA8-E520-4E2C-91E9-5A8EDCFBC89A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebSockets", "WebSockets\WebSockets.csproj", "{29C64DA8-E520-4E2C-91E9-5A8EDCFBC89A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

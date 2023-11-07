@@ -145,6 +145,22 @@
               "target": "Package",
               "version": "[11.8.0, )"
             },
+            "Grpc": {
+              "target": "Package",
+              "version": "[2.46.6, )"
+            },
+            "HotChocolate.AspNetCore": {
+              "target": "Package",
+              "version": "[13.7.0, )"
+            },
+            "HotChocolate.AspNetCore.Authorization": {
+              "target": "Package",
+              "version": "[13.7.0, )"
+            },
+            "HotChocolate.Data.EntityFramework": {
+              "target": "Package",
+              "version": "[13.7.0, )"
+            },
             "MediatR": {
               "target": "Package",
               "version": "[12.1.1, )"
