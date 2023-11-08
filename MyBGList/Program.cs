@@ -19,6 +19,7 @@ using MyBGList.Validators;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
 using System.Data;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -96,6 +97,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(opt => {
     opt.ParameterFilter<SortColumnFilter>();
     opt.ParameterFilter<SortOrderFilter>();
+
+    var xmlPath = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    opt.IncludeXmlComments(System.IO.Path.Combine(AppContext.BaseDirectory, xmlPath));  
+    opt.EnableAnnotations();
 
     opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
         In = ParameterLocation.Header,
@@ -230,6 +235,17 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
+}else {
+    app.UseHsts();
+    app.Use(async (context, next) => {
+        context.Response.Headers.Add("X-Frame-Options", "sameorigin");
+        context.Response.Headers.Add("X-XSS-Protection", "1;mode=block");
+        context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+        context.Response.Headers.Add("Content-Security-Policy", "default-src'self';");
+        context.Response.Headers.Add("Referrer-Policy", "strict-origin");
+
+        await next();
+    });
 }
 
 if(app.Configuration.GetValue<bool>("UseDeveloperExceptionPage")) {

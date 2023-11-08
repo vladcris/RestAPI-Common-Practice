@@ -7,6 +7,7 @@ using MyBGList.Constants;
 using MyBGList.DTO;
 using MyBGList.Mediator.Queries;
 using MyBGList.Models;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Linq.Dynamic.Core;
 using System.Text.Json;
 
@@ -31,6 +32,9 @@ public class BoardGamesController : ControllerBase
         _mediator = mediator;
     }
 
+    [SwaggerOperation(Summary = "gets data", Description = "details")]
+    [ProducesResponseType(typeof(BadRequestObjectResult), 400)] 
+    [ProducesResponseType(typeof(ProblemDetails), 401)] 
     [HttpGet("{id:int}", Name = "GetBoardGame")]
     public async Task<ActionResult<RestDTO<BoardGame>>> GetBoardGame(int id) {
         var response = await _mediator.Send(new GetBoardGame(id));

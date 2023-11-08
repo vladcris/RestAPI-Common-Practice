@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "glEAh8K6mULl4EmM48XBPvu0HGkaAh9STwuQr9uREGJtkgp7C9wMQZKUiSTU7fa9IuAg35aqJPUQRyDLJ2LExA==",
+  "dgSpecHash": "tXIlgYWi89EDQ120KirJYqNZLWXpCPErASjeZNbTqF9w9lF+UV/YU/fyJMW8pvsOOIzOyHSxkQAJsZtGf98L4w==",
   "success": true,
   "projectFilePath": "C:\\Users\\const\\source\\repos\\building-web-apis-with-aspnet-core\\MyBGGList.Test.Helpers\\MyBGGList.Test.Helpers.csproj",
   "expectedPackageFiles": [
@@ -132,6 +132,7 @@
     "C:\\Users\\const\\.nuget\\packages\\serilog.sinks.periodicbatching\\3.1.0\\serilog.sinks.periodicbatching.3.1.0.nupkg.sha512",
     "C:\\Users\\const\\.nuget\\packages\\stackexchange.redis\\2.2.4\\stackexchange.redis.2.2.4.nupkg.sha512",
     "C:\\Users\\const\\.nuget\\packages\\swashbuckle.aspnetcore\\6.5.0\\swashbuckle.aspnetcore.6.5.0.nupkg.sha512",
+    "C:\\Users\\const\\.nuget\\packages\\swashbuckle.aspnetcore.annotations\\6.5.0\\swashbuckle.aspnetcore.annotations.6.5.0.nupkg.sha512",
     "C:\\Users\\const\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.5.0\\swashbuckle.aspnetcore.swagger.6.5.0.nupkg.sha512",
     "C:\\Users\\const\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.5.0\\swashbuckle.aspnetcore.swaggergen.6.5.0.nupkg.sha512",
     "C:\\Users\\const\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.5.0\\swashbuckle.aspnetcore.swaggerui.6.5.0.nupkg.sha512",

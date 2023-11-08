@@ -35,6 +35,11 @@ public class AccountController : ControllerBase
         _validator = validator;
     }
 
+    /// <summary>
+    /// What it does
+    /// </summary>
+    /// <param name="input">Some info</param>
+    /// <returns>What returns</returns>
     [HttpPost("register")]
     [ResponseCache(CacheProfileName = "NoCache")]
     public async Task<ActionResult> Register([FromBody] RegisterDTO input) {
